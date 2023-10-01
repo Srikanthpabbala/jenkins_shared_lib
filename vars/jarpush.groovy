@@ -1,3 +1,3 @@
-dir('/path/to/script/directory') {
-    sh './jfrog.py'
+def call (){
+    sh ' ./jfrog.py'
 }
