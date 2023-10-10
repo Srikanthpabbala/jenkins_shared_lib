@@ -1,22 +1,30 @@
-def jfrogCli = 'jfrog' // Replace with the actual path to the JFrog CLI executable
+import requests
 
-def username = 'admin'
-def password = 'Password1'
-def artifactoryUrl = 'http://35.171.28.240:8082/artifactory/example-repo-local/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar'
-def repositoryKey = 'example-repo-local'
-def targetPath = 'home/ubuntu/Java_app_3.0/target'
-def sourceJarFile = 'kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar'
+# JFrog Artifactory details
+artifactory_url = "http://35.171.28.240:8082/artifactory/example-repo-local/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar"
+username = "admin"
+password = "Password1"
+repo_key = "example-repo-local"  # The target repository key in Artifactory
 
-// Construct the command to push the JAR file
-def pushCommand = "${jfrogCli} rt u ${sourceJarFile} ${artifactoryUrl}/${repositoryKey}/${targetPath} --user=${username} --password=${password}"
+# Path to the JAR file
+jar_file_path = "kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar"
 
-// Execute the command
-def process = pushCommand.execute()
-process.waitFor()
+# Construct the upload URL
+upload_url = f"{artifactory_url}/{repo_key}/{jar_file_path}"
 
-// Check the exit code
-if (process.exitValue() == 0) {
-    println("JAR file successfully pushed to Artifactory.")
-} else {
-    println("Failed to push JAR file to Artifactory. Exit code: ${process.exitValue()}")
-    println("Error output:\n${process.error.text}")
+# Set up the authentication
+auth = (username, password)
+
+# Upload the JAR file
+try:
+    with open(jar_file_path, 'rb') as jar_file:
+        response = requests.put(upload_url, data=jar_file, auth=auth)
+
+    if response.status_code == 201:
+        print("Upload successful!")
+    else:
+        print(f"Upload failed with status code: {response.status_code}")
+        print(response.text)
+
+except Exception as e:
+    print(f"An error occurred: {str(e)}")
